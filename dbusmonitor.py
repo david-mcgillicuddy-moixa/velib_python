@@ -168,8 +168,15 @@ class DbusMonitor(object):
 				di = self.dbusConn.call_blocking(serviceName,
 					'/DeviceInstance', None, 'GetValue', '', [])
 			except dbus.exceptions.DBusException:
-				logger.info("       %s was skipped because it has no device instance" % serviceName)
-				return False # Skip it
+				try:
+					logger.info("       %s did not have null interface device instance, trying com.victronenergy.BusItem" % serviceName)
+					di = self.dbusConn.call_blocking(serviceName,
+					'/DeviceInstance', 'com.victronenergy.BusItem', 'GetValue', '', [])
+				except dbus.exceptions.DBusException:
+					logger.info("       %s was skipped because it has no device instance" % serviceName)
+					return False # Skip it
+				else:
+					di = int(di)
 			else:
 				di = int(di)
 
